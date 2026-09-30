@@ -1,0 +1,224 @@
+import { Button, VerticalBox, HorizontalBox, GridBox, CheckBox, Switch, RadioGroup } from "std-widgets.slint";
+import { SideSwitch } from "side_switch.slint";
+import { XIcon, CheckIcon } from "icons.slint";
+
+export component App inherits Window {
+    Image {
+        source: @image-url("image.png");
+        image-fit: fill;
+    }
+    Rectangle {
+        x: 25px; y: 16px;
+        width: root.width - 50px;
+        height: root.height - 32px;
+        
+        HorizontalBox {
+            padding: 0;
+            GridBox {
+                spacing: 2px;
+                Row {
+                    red_auton := Rectangle {
+                        width: 100px;
+                        height: (root.height - 50px) / 2 - 2px;
+                        background: #161616;
+                        TouchArea {
+                            clicked => {
+                                parent.background = #6e6e6e;
+                                blue_auton.background = #161616;
+                                skills_auton.background = #161616;
+                            }
+                        }
+                        VerticalBox {
+                            Rectangle {
+                                background: #ff0000;
+                                width: parent.width - 16px;
+                                x: 10px;
+                                height: parent.height - 48px;
+                                border-radius: 10px;
+                            }
+                            Text { text: "Red Auton"; horizontal-alignment: center; }
+                        }
+                        
+                        border-radius: 10px;
+                    }
+
+                    solo_auton := Rectangle {
+                        width: 100px;
+                        height: (root.height - 50px) / 2 - 2px;
+                        background: #161616;
+                        TouchArea {
+                            clicked => {
+                                if parent.background == #161616 {
+                                    parent.background = #181818;
+                                    solo_disabled.visible = false;
+                                    solo_enabled.visible = true;
+                                } else {
+                                    parent.background = #161616;
+                                    solo_disabled.visible = true;
+                                    solo_enabled.visible = false;
+                                }
+                                
+                            }
+                        }
+                        VerticalBox {
+                            Rectangle {
+                                background: #242424;
+                                width: parent.width - 16px;
+                                x: 10px;
+                                height: parent.height - 48px;
+                                border-radius: 10px;
+                                solo_disabled := XIcon { }
+                                solo_enabled := CheckIcon {x: solo_disabled.x; y: solo_disabled.y; visible: false; }
+                            }
+                            Text { text: "Solo"; horizontal-alignment: center; }
+                        }
+                        
+                        border-radius: 10px;
+                    }
+                }
+
+                Row {
+                    blue_auton := Rectangle {
+                        width: 100px;
+                        height: (root.height - 50px) / 2 - 2px;
+                        background: #161616;
+                        TouchArea {
+                            clicked => {
+                                parent.background = #6e6e6e;
+                                red_auton.background = #161616;
+                                skills_auton.background = #161616;
+                            }
+                        }
+                        VerticalBox {
+                            Rectangle {
+                                background: #0000ff;
+                                width: parent.width - 16px;
+                                x: 10px;
+                                height: parent.height - 48px;
+                                border-radius: 10px;
+                            }
+                            Text { text: "Blue Auton"; horizontal-alignment: center; }
+                        }
+                        
+                        border-radius: 10px;
+                    }
+
+                    skills_auton := Rectangle {
+                        width: 100px;
+                        height: (root.height - 50px) / 2 - 2px;
+                        background: #161616;
+                        TouchArea {
+                            clicked => {
+                                parent.background = #6e6e6e;
+                                red_auton.background = #161616;
+                                blue_auton.background = #161616;
+                            }
+                        }
+                        VerticalBox {
+                            Rectangle {
+                                background: #00ff00;
+                                width: parent.width - 16px;
+                                x: 10px;
+                                height: parent.height - 48px;
+                                border-radius: 10px;
+                            }
+                            Text { text: "Skills Auton"; horizontal-alignment: center; }
+                        }
+                        
+                        border-radius: 10px;
+                    }
+                }
+            }
+            VerticalBox {
+                spacing: 2px;
+                padding-top: 6px;
+                padding-bottom: 0;
+                Rectangle {
+                    height: (root.height - 50px) / 2 - 2px;
+                    background: #161616;
+                    TouchArea {
+                        clicked => {
+                            txt.text = "Calibrating..."
+                        }
+                    }
+                    txt := Text { text: "Calibrate"; horizontal-alignment: center; }
+                    
+                    border-radius: 10px;
+                }
+
+                Rectangle {
+                    height: (root.height - 50px) / 2 - 2px;
+                    background: #161616;
+                    TouchArea {
+                        clicked => {
+                            debug.visible = true
+                        }
+                    }
+                    HorizontalBox {
+                        Text { text: "90385C\nCesium"; horizontal-alignment: center; font-size: 30px;}
+                        VerticalBox {
+                            Text { text: "⏰"; font-size: 60px; line-height-factor: 0.4;}
+                            Text { text: "Pumas"; font-size: 10px;}
+                        }
+                    }
+                    
+                    
+                    border-radius: 10px;
+                }
+            }
+        }
+        
+        debug := Rectangle {
+            background: #161616;
+            border-radius: 10px;
+            visible: false;
+
+            Text { text: "Debug (tap anywhere to close)"; x: 10px; y: 5px;}
+            Text { text: "Ports:"; x: 10px; y: 32px; color: #9c9cff; }
+            HorizontalBox {
+                x: 10px;
+                y: 52px;
+                padding: 0px;
+                VerticalBox {
+                    spacing: -96px;
+                    padding: 0px;
+                    Text {text: "Port 01: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 02: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 03: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 04: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 05: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 06: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 07: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 08: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 09: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 10: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 22: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                }
+                VerticalBox {
+                    spacing: -96px;
+                    padding: 0px;
+                    Text {text: "Port 11: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 12: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 13: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 14: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 15: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 16: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 17: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 18: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 19: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                    Text {text: "Port 20: ----------"; font-size: 12px; line-height-factor: 0.75; }
+                }
+                width: 150px;
+            }
+            Text { text: "Battery: 100% 32°C"; x: 10px; y: 180px; color: #a3ff9c; }
+            Image { source: @image-url("field.png"); width: 140px; height: self.width; x: parent.width - self.width - 20px; y: 10px; }
+            Text { text: "X: 0.00000m\nY: 0.00000m\nHeading: 0.00°"; font-size: 12px; x: parent.width - self.width * 2 + 5px; y: 155px; }
+
+            TouchArea {
+                clicked => {
+                    debug.visible = false
+                }
+            }
+        }
+    }
+}

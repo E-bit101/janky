@@ -1,97 +1,79 @@
 use std::println;
 
 use pid::Pid;
-use vexide::prelude::*;
+use vexide::{math::Angle, prelude::*};
+use vexide::competition;
+use vexide::competition::CompetitionMode;
 use vexide_motorgroup::MotorGroup;
 
 struct Robot {
     controller: Controller,
     left_motors: MotorGroup,
     right_motors: MotorGroup,
-    claw: AdiDigitalOut,
-    lift_left: Motor,
-    lift_right: Motor,
-    lift_height: f64
+    imu: InertialSensor
+    // claw: AdiDigitalOut,
+    // lift_left: Motor,
+    // lift_right: Motor,
+    // lift_height: f64
 }
 
 impl Compete for Robot {
     async fn autonomous(&mut self) {
-        println!("Autonomous!")
+        println!("Autonomous!");
+
+        let mut pid: Pid<f64> = Pid::new(0, 1.0);
+        pid.p(0.01, 1.0);
+        pid.d(0.01, 1.0);
+
+        loop {
+            let error = self.imu.rotation().unwrap_or(Angle::ZERO).as_degrees();
+            
+            let output = pid.next_control_output(error).output;
+            println!("{} {}", output, error);
+
+            let l = output;
+            let r = -output;
+
+            let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage());
+            let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage());
+
+            if competition::mode() != CompetitionMode::Autonomous { break }
+        }
     }
 
     async fn driver(&mut self) {
         println!("Driver!");
 
-        let mut p = 0.1;
-        let mut i = 0.0;
-        let mut d = 0.0;
-        let mut selected_val = 0;
-
-        let mut lift_left_pid: Pid<f64> = Pid::new(0.0, 1.0);
-        lift_left_pid.p(p, 100.0);
-        lift_left_pid.i(i, 100.0);
-        lift_left_pid.d(d, 100.0);
-        let mut lift_right_pid: Pid<f64> = Pid::new(0.0, 1.0);
-        lift_right_pid.p(p, 100.0);
-        lift_right_pid.i(i, 100.0);
-        lift_right_pid.d(d, 100.0);
-
         loop {
             let state = self.controller.state().unwrap_or_default();
 
-            if state.button_a.is_now_pressed() {
-                let _ = self.claw.toggle();
-            }
-
-            if state.button_down.is_now_pressed() || state.button_up.is_now_pressed() || state.button_left.is_now_pressed() || state.button_right.is_now_pressed() {
-                lift_left_pid.p(p, 100.0);
-                lift_left_pid.i(i, 100.0);
-                lift_left_pid.d(d, 100.0);
-                lift_right_pid.p(p, 100.0);
-                lift_right_pid.i(i, 100.0);
-                lift_right_pid.d(d, 100.0);
-                let _ = self.controller.set_text(format!("p: {} i: {} d: {} s: {}", p, i, d, selected_val), 1, 1).await;
-            }
-
-            if state.button_down.is_now_pressed() {
-                if selected_val == 0 { p += 0.1; }
-                if selected_val == 1 { i += 0.1; }
-                if selected_val == 2 { d += 0.1; }
-            }
-
-            if state.button_up.is_now_pressed() {
-                if selected_val == 0 { p -= 0.1; }
-                if selected_val == 1 { i -= 0.1; }
-                if selected_val == 2 { d -= 0.1; }
-            }
-
-            if state.button_right.is_now_pressed() {
-                selected_val = (selected_val + 1) % 3;
-            }
-
-            if state.button_left.is_now_pressed() {
-                selected_val = (selected_val + 1) % 3;
-            }
+            // if state.button_a.is_now_pressed() {
+            //     let _ = self.claw.toggle();
+            // }
             
-            let l = state.left_stick.y() + state.right_stick.x();
-            let r = state.left_stick.y() - state.right_stick.x();
+            let curve = 1.0 / (state.left_stick.y() * 3.0);
+            let l = state.left_stick.y() + state.right_stick.x() * curve;
+            let r = state.left_stick.y() - state.right_stick.x() * curve;
 
-            let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage());
-            let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage());
+            // let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage());
+            // let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage());
             
-            let target = self.lift_height - self.lift_left.position().unwrap().as_degrees();
-            let output_left = lift_right_pid.next_control_output(-target);
-            let target = self.lift_height - self.lift_right.position().unwrap().as_degrees();
-            let output_right = lift_right_pid.next_control_output(-target);
+            // let target_left = self.lift_height - self.lift_left.position().unwrap().as_degrees();
+            // let target_right = self.lift_height - self.lift_right.position().unwrap().as_degrees();
 
-            println!("Left: {}, Right: {}, Target: {}", output_left.output, output_right.output, target);
-            let _ = self.lift_left.set_voltage(output_left.output * self.lift_left.max_voltage());
-            let _ = self.lift_right.set_voltage(output_right.output * self.lift_right.max_voltage());
+            // println!("Left: {}, Right: {}, Target: {}", target_left, target_right, self.lift_height);
+            // if state.button_r1.is_pressed() || state.button_r2.is_pressed() {
+            //     let _ = self.lift_left.set_voltage(target_left / 5.0);
+            //     let _ = self.lift_right.set_voltage(target_right / 5.0);
+            // } else {
+            //     let _ = self.lift_left.set_position_target(Angle::from_degrees(self.lift_height), 200);
+            //     let _ = self.lift_right.set_position_target(Angle::from_degrees(self.lift_height), 200);
+            // }
             
-            if state.button_r1.is_pressed() { self.lift_height += 300.0 * 0.025; }
-            if state.button_r2.is_pressed() { self.lift_height -= 300.0 * 0.025; }
-            self.lift_height = if self.lift_height > 50.0 { self.lift_height } else { 50.0 };
-            self.lift_height = if self.lift_height < 800.0 { self.lift_height } else { 800.0 };
+            // if state.button_r1.is_pressed() { self.lift_height += 500.0 * 0.025; }
+            // if state.button_r2.is_pressed() { self.lift_height -= 500.0 * 0.025; }
+            // self.lift_height = if self.lift_height > 50.0 { self.lift_height } else { 50.0 };
+            // self.lift_height = if self.lift_height < 800.0 { self.lift_height } else { 800.0 };
             sleep(Controller::UPDATE_INTERVAL).await; 
         }
     }
@@ -115,19 +97,24 @@ async fn main(peripherals: vexide::prelude::Peripherals) {
         Motor::new(peripherals.port_10, Gearset::Green, Direction::Forward)
     ]);
 
-    let lift_left = Motor::new(peripherals.port_3, Gearset::Red, Direction::Reverse);
-    let lift_right = Motor::new(peripherals.port_4, Gearset::Red, Direction::Forward);
+    let mut imu = InertialSensor::new(peripherals.port_1);
+
+    _ = imu.calibrate().await;
+
+    // let lift_left = Motor::new(peripherals.port_3, Gearset::Red, Direction::Reverse);
+    // let lift_right = Motor::new(peripherals.port_4, Gearset::Red, Direction::Forward);
     
-    let claw = AdiDigitalOut::new(peripherals.adi_a);
+    // let claw = AdiDigitalOut::new(peripherals.adi_a);
 
     let robot = Robot {
         controller,
         left_motors,
         right_motors,
-        claw,
-        lift_left,
-        lift_right,
-        lift_height: 0.0
+        imu
+        // claw,
+        // lift_left,
+        // lift_right,
+        // lift_height: 0.0
     };
 
     // Since running the Slint UI is a blocking operation, we need to spawn the
@@ -143,20 +130,4 @@ async fn main(peripherals: vexide::prelude::Peripherals) {
         .expect("Failed to create application")
         .run()
         .expect("Failed to run application");
-    // Since MyApplication::run() could return if the application is closed
-    // programmatically, we need to convince the compiler that the return type
-    // is `!` (never). 
-    // vexide::program::abort();
 }
-
-
-// async fn main(peripherals: Peripherals) {
-//     let controller = peripherals.primary_controller;
-//     let mut left_motor = Motor::new(peripherals.port_1, Gearset::Green, Direction::Forward);
-//     let robot = Robot {
-//         left_motor,
-//         controller: controller,
-//     };
-
-//     robot.compete().await;
-// }

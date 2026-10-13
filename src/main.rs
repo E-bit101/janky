@@ -11,7 +11,7 @@ struct Robot {
     left_motors: MotorGroup,
     right_motors: MotorGroup,
     imu: InertialSensor
-    // claw: AdiDigitalOut,
+    claw: AdiDigitalOut,
     // lift_left: Motor,
     // lift_right: Motor,
     // lift_height: f64
@@ -47,16 +47,16 @@ impl Compete for Robot {
         loop {
             let state = self.controller.state().unwrap_or_default();
 
-            // if state.button_a.is_now_pressed() {
-            //     let _ = self.claw.toggle();
-            // }
+            if state.button_a.is_now_pressed() {
+                let _ = self.claw.toggle();
+            }
             
             let curve = 1.0 / (state.left_stick.y() * 3.0);
             let l = state.left_stick.y() + state.right_stick.x() * curve;
             let r = state.left_stick.y() - state.right_stick.x() * curve;
 
-            // let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage());
-            // let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage());
+            let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage());
+            let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage());
             
             // let target_left = self.lift_height - self.lift_left.position().unwrap().as_degrees();
             // let target_right = self.lift_height - self.lift_right.position().unwrap().as_degrees();
@@ -104,14 +104,14 @@ async fn main(peripherals: vexide::prelude::Peripherals) {
     // let lift_left = Motor::new(peripherals.port_3, Gearset::Red, Direction::Reverse);
     // let lift_right = Motor::new(peripherals.port_4, Gearset::Red, Direction::Forward);
     
-    // let claw = AdiDigitalOut::new(peripherals.adi_a);
+    let claw = AdiDigitalOut::new(peripherals.adi_a);
 
     let robot = Robot {
         controller,
         left_motors,
         right_motors,
         imu
-        // claw,
+        claw,
         // lift_left,
         // lift_right,
         // lift_height: 0.0

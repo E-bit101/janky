@@ -10,11 +10,12 @@ struct Robot {
     controller: Controller,
     left_motors: MotorGroup,
     right_motors: MotorGroup,
-    imu: InertialSensor
-    claw: AdiDigitalOut,
-    // lift_left: Motor,
-    // lift_right: Motor,
-    // lift_height: f64
+    imu: InertialSensor,
+    //claw: AdiDigitalOut,
+    lift_left: Motor,
+    lift_right: Motor,
+    lift_height: f64,
+    //intake: Motor
 }
 
 impl Compete for Robot {
@@ -47,9 +48,9 @@ impl Compete for Robot {
         loop {
             let state = self.controller.state().unwrap_or_default();
 
-            if state.button_a.is_now_pressed() {
-                let _ = self.claw.toggle();
-            }
+            //if state.button_a.is_now_pressed() {
+              //  let _ = self.claw.toggle();
+            //}
             
             let curve = 1.0 / (state.left_stick.y() * 3.0);
             let l = state.left_stick.y() + state.right_stick.x() * curve;
@@ -58,22 +59,22 @@ impl Compete for Robot {
             let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage());
             let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage());
             
-            // let target_left = self.lift_height - self.lift_left.position().unwrap().as_degrees();
-            // let target_right = self.lift_height - self.lift_right.position().unwrap().as_degrees();
+            let target_left = self.lift_height - self.lift_left.position().unwrap().as_degrees();
+            let target_right = self.lift_height - self.lift_right.position().unwrap().as_degrees();
 
             // println!("Left: {}, Right: {}, Target: {}", target_left, target_right, self.lift_height);
-            // if state.button_r1.is_pressed() || state.button_r2.is_pressed() {
-            //     let _ = self.lift_left.set_voltage(target_left / 5.0);
-            //     let _ = self.lift_right.set_voltage(target_right / 5.0);
-            // } else {
-            //     let _ = self.lift_left.set_position_target(Angle::from_degrees(self.lift_height), 200);
-            //     let _ = self.lift_right.set_position_target(Angle::from_degrees(self.lift_height), 200);
-            // }
+            if state.button_r1.is_pressed() || state.button_r2.is_pressed() {
+                let _ = self.lift_left.set_voltage(target_left / 5.0);
+                let _ = self.lift_right.set_voltage(target_right / 5.0);
+            } else {
+                let _ = self.lift_left.set_position_target(Angle::from_degrees(self.lift_height), 200);
+                let _ = self.lift_right.set_position_target(Angle::from_degrees(self.lift_height), 200);
+            }
             
-            // if state.button_r1.is_pressed() { self.lift_height += 500.0 * 0.025; }
-            // if state.button_r2.is_pressed() { self.lift_height -= 500.0 * 0.025; }
-            // self.lift_height = if self.lift_height > 50.0 { self.lift_height } else { 50.0 };
-            // self.lift_height = if self.lift_height < 800.0 { self.lift_height } else { 800.0 };
+            if state.button_r1.is_pressed() { self.lift_height += 500.0 * 0.025; }
+            if state.button_r2.is_pressed() { self.lift_height -= 500.0 * 0.025; }
+            self.lift_height = if self.lift_height > 50.0 { self.lift_height } else { 50.0 };
+            self.lift_height = if self.lift_height < 800.0 { self.lift_height } else { 800.0 };
             sleep(Controller::UPDATE_INTERVAL).await; 
         }
     }
@@ -87,22 +88,24 @@ slint::include_modules!();
 async fn main(peripherals: vexide::prelude::Peripherals) {
     let controller = peripherals.primary_controller;
     let left_motors = MotorGroup::new(vec![
-        Motor::new(peripherals.port_5, Gearset::Green, Direction::Reverse),
-        Motor::new(peripherals.port_6, Gearset::Green, Direction::Reverse),
-        Motor::new(peripherals.port_7, Gearset::Green, Direction::Reverse)
+        Motor::new(peripherals.port_11, Gearset::Green, Direction::Reverse),
+        Motor::new(peripherals.port_13, Gearset::Green, Direction::Reverse),
+        Motor::new(peripherals.port_15, Gearset::Green, Direction::Reverse)
     ]);
     let right_motors = MotorGroup::new(vec![
-        Motor::new(peripherals.port_8, Gearset::Green, Direction::Forward),
-        Motor::new(peripherals.port_9, Gearset::Green, Direction::Forward),
-        Motor::new(peripherals.port_10, Gearset::Green, Direction::Forward)
+        Motor::new(peripherals.port_12, Gearset::Green, Direction::Forward),
+        Motor::new(peripherals.port_14, Gearset::Green, Direction::Forward),
+        Motor::new(peripherals.port_16, Gearset::Green, Direction::Forward)
     ]);
 
     let mut imu = InertialSensor::new(peripherals.port_1);
 
+    //let intake = Motor::new(vec![peripherals.port_11, Gearset::Red, Direction::Forward]);
+
     _ = imu.calibrate().await;
 
-    // let lift_left = Motor::new(peripherals.port_3, Gearset::Red, Direction::Reverse);
-    // let lift_right = Motor::new(peripherals.port_4, Gearset::Red, Direction::Forward);
+    let lift_left = Motor::new(peripherals.port_17, Gearset::Green, Direction::Forward);
+    let lift_right = Motor::new(peripherals.port_18, Gearset::Green, Direction::Reverse);
     
     let claw = AdiDigitalOut::new(peripherals.adi_a);
 
@@ -110,11 +113,12 @@ async fn main(peripherals: vexide::prelude::Peripherals) {
         controller,
         left_motors,
         right_motors,
-        imu
-        claw,
-        // lift_left,
-        // lift_right,
-        // lift_height: 0.0
+        imu,
+        // claw,
+        lift_left,
+        lift_right,
+        lift_height: 0.0
+        //intake
     };
 
     // Since running the Slint UI is a blocking operation, we need to spawn the

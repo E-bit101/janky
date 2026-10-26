@@ -62,19 +62,19 @@ impl Compete for Robot {
             let target_left = self.lift_height - self.lift_left.position().unwrap().as_degrees();
             let target_right = self.lift_height - self.lift_right.position().unwrap().as_degrees();
 
-            // println!("Left: {}, Right: {}, Target: {}", target_left, target_right, self.lift_height);
+            println!("Left: {}, Right: {}, Target: {}", target_left, target_right, self.lift_height);
             if state.button_r1.is_pressed() || state.button_r2.is_pressed() {
-                let _ = self.lift_left.set_voltage(target_left / 5.0);
-                let _ = self.lift_right.set_voltage(target_right / 5.0);
+                let _ = self.lift_left.set_voltage(target_left / 4.0);
+                let _ = self.lift_right.set_voltage(target_right / 4.0);
             } else {
                 let _ = self.lift_left.set_position_target(Angle::from_degrees(self.lift_height), 200);
                 let _ = self.lift_right.set_position_target(Angle::from_degrees(self.lift_height), 200);
             }
             
-            if state.button_r1.is_pressed() { self.lift_height += 500.0 * 0.025; }
-            if state.button_r2.is_pressed() { self.lift_height -= 500.0 * 0.025; }
-            self.lift_height = if self.lift_height > 50.0 { self.lift_height } else { 50.0 };
-            self.lift_height = if self.lift_height < 800.0 { self.lift_height } else { 800.0 };
+            if state.button_r1.is_pressed() { self.lift_height += 800.0 * 0.025; }
+            if state.button_r2.is_pressed() { self.lift_height -= 800.0 * 0.025; }
+            self.lift_height = if self.lift_height > 10.0 { self.lift_height } else { 10.0 };
+            self.lift_height = if self.lift_height < 1111.0 { self.lift_height } else { 1111.0 };
             sleep(Controller::UPDATE_INTERVAL).await; 
         }
     }

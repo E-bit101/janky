@@ -6,6 +6,8 @@ use vexide::competition;
 use vexide::competition::CompetitionMode;
 use vexide_motorgroup::MotorGroup;
 
+mod curves;
+
 struct Robot {
     controller: Controller,
     left_motors: MotorGroup,
@@ -52,15 +54,15 @@ impl Compete for Robot {
                let _ = self.claw.toggle();
             }
             
-            let curve = 0.75 / (state.left_stick.y() * 3.0);
-            let l = state.left_stick.y() + state.right_stick.x() * curve;
-            let r = state.left_stick.y() - state.right_stick.x() * curve;
+            let turn = state.right_stick.x();
+            let l = state.left_stick.y() + curves::steering(turn) * curves::turn_speed(turn);
+            let r = state.left_stick.y() - curves::steering(turn) * curves::turn_speed(turn);
 
             let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage() * 0.8);
             let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage() * 0.8);
             
-            let target_left = self.lift_height - self.lift_left.position().unwrap().as_degrees();
-            let target_right = self.lift_height - self.lift_right.position().unwrap().as_degrees();
+            let target_left = self.lift_height - self.lift_left.position().unwrap_or(Angle::ZERO).as_degrees();
+            let target_right = self.lift_height - self.lift_right.position().unwrap_or(Angle::ZERO).as_degrees();
 
             println!("Left: {}, Right: {}, Target: {}", target_left, target_right, self.lift_height);
             if state.button_r1.is_pressed() || state.button_r2.is_pressed() {

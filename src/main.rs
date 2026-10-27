@@ -52,12 +52,12 @@ impl Compete for Robot {
                let _ = self.claw.toggle();
             }
             
-            let curve = 0.5 / (state.left_stick.y() * 3.0);
+            let curve = 0.75 / (state.left_stick.y() * 3.0);
             let l = state.left_stick.y() + state.right_stick.x() * curve;
             let r = state.left_stick.y() - state.right_stick.x() * curve;
 
-            let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage());
-            let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage());
+            let _ = self.left_motors.set_voltage(l * self.left_motors.max_voltage() * 0.8);
+            let _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage() * 0.8);
             
             let target_left = self.lift_height - self.lift_left.position().unwrap().as_degrees();
             let target_right = self.lift_height - self.lift_right.position().unwrap().as_degrees();

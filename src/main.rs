@@ -11,7 +11,7 @@ struct Robot {
     left_motors: MotorGroup,
     right_motors: MotorGroup,
     imu: InertialSensor,
-    //claw: AdiDigitalOut,
+    claw: AdiDigitalOut,
     lift_left: Motor,
     lift_right: Motor,
     lift_height: f64,
@@ -48,11 +48,11 @@ impl Compete for Robot {
         loop {
             let state = self.controller.state().unwrap_or_default();
 
-            //if state.button_a.is_now_pressed() {
-              //  let _ = self.claw.toggle();
-            //}
+            if state.button_a.is_now_pressed() {
+               let _ = self.claw.toggle();
+            }
             
-            let curve = 1.0 / (state.left_stick.y() * 3.0);
+            let curve = 0.5 / (state.left_stick.y() * 3.0);
             let l = state.left_stick.y() + state.right_stick.x() * curve;
             let r = state.left_stick.y() - state.right_stick.x() * curve;
 
@@ -114,7 +114,7 @@ async fn main(peripherals: vexide::prelude::Peripherals) {
         left_motors,
         right_motors,
         imu,
-        // claw,
+        claw,
         lift_left,
         lift_right,
         lift_height: 0.0

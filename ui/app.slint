@@ -3,6 +3,8 @@ import { SideSwitch } from "side_switch.slint";
 import { XIcon, CheckIcon } from "icons.slint";
 
 export component App inherits Window {
+    in-out property<string> status-text: "Status: Auton";
+
     Image {
         source: @image-url("image.png");
         image-fit: fill;
@@ -174,7 +176,8 @@ export component App inherits Window {
             visible: false;
 
             Text { text: "Debug (tap anywhere to close)"; x: 10px; y: 5px;}
-            Text { text: "Ports:"; x: 10px; y: 32px; color: #9c9cff; }
+            Text { text: status-text; x: 10px; y: 10px;}
+            Text { text: "Ports:"; x: 15px; y: 32px; color: #9c9cff; }
             HorizontalBox {
                 x: 10px;
                 y: 52px;
@@ -211,7 +214,7 @@ export component App inherits Window {
                 width: 150px;
             }
             Text { text: "Battery: 100% 32°C"; x: 10px; y: 180px; color: #a3ff9c; }
-            Image { source: @image-url("field.png"); width: 140px; height: self.width; x: parent.width - self.width - 20px; y: 10px; }
+            // Image { source: @image-url("field.png"); width: 140px; height: self.width; x: parent.width - self.width - 20px; y: 10px; }
             Text { text: "X: 0.00000m\nY: 0.00000m\nHeading: 0.00°"; font-size: 12px; x: parent.width - self.width * 2 + 5px; y: 155px; }
 
             TouchArea {

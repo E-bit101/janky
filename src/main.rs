@@ -82,28 +82,29 @@ impl Compete for util::Robot {
             // CONFIG CONTROLS
             if state.button_x.is_pressed() && state.button_up.is_now_pressed() { 
                 config_open = ! config_open;
-                if !config_open { _ = self.controller.clear_screen(); }
+                if !config_open { _ = self.controller.clear_screen().await; }
             }
 
             if config_open {
-                config::draw_config(&mut self.controller, self.config.clone());
-                self.config.current_row = if state.button_down.is_now_pressed()    { self.config.current_row.clamp(1, self.config.number_configs.len()-1) - 1 }
-                                          else if state.button_up.is_now_pressed() { self.config.current_row.clamp(1, self.config.number_configs.len()-2) + 1 }
+                // _ = self.controller.clear_screen().await;
+                if state.button_down.is_pressed() || state.button_up.is_pressed() || state.button_left.is_pressed() || state.button_right.is_pressed() || state.button_x.is_pressed() {
+                    config::draw_config(&mut self.controller, self.config.clone()).await;
+                }
+                self.config.current_row = if state.button_down.is_now_pressed()    { (self.config.current_row + 1).clamp(1, self.config.number_configs.len() as isize-1) }
+                                          else if state.button_up.is_now_pressed() { (self.config.current_row - 1).clamp(0, self.config.number_configs.len() as isize-2) }
                                           else                                     { self.config.current_row };
                 
                 if state.button_left.is_now_pressed() {
-                    let option: &mut config::ConfigNumber = &mut self.config.number_configs[self.config.current_row];
+                    let option: &mut config::ConfigNumber = &mut self.config.number_configs[self.config.current_row as usize];
                     option.value -= if state.button_x.is_pressed() { option.increment * option.increment } else { option.increment };
                     option.value = option.value.clamp(option.min_value, option.max_value);
                 }
 
                 if state.button_right.is_now_pressed() {
-                    let option: &mut config::ConfigNumber = &mut self.config.number_configs[self.config.current_row];
+                    let option: &mut config::ConfigNumber = &mut self.config.number_configs[self.config.current_row as usize];
                     option.value += if state.button_x.is_pressed() { option.increment * option.increment } else { option.increment };
                     option.value = option.value.clamp(option.min_value, option.max_value);
                 }
-                
-                sleep(Controller::UPDATE_INTERVAL).await; // Avoid spamming the data connection too much
             }
 
             // READ CONFIG
@@ -130,7 +131,7 @@ impl Compete for util::Robot {
 
             // CLAW ROTATION
             if c_claw_rot != -1.0 { claw_rot_state = c_claw_rot }
-            _ = self.claw_tilt.set_position_target(Angle::from_degrees(remap_num(claw_rot_state, claw_low_angle, claw_high_angle)), 200);
+            _ = self.claw_tilt.set_position_target(Angle::from_degrees(remap_num(claw_rot_state, -claw_low_angle, claw_high_angle)), 200);
 
             sleep(Controller::UPDATE_INTERVAL).await; 
         }

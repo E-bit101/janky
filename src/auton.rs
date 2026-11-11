@@ -9,16 +9,22 @@ pub async fn move_to_loc(robot: &mut util::Robot, location: util::Location, tole
         let ang = angle_diff(robot.loc.heading,angle_to(robot.loc, location));
         let l = robot.left_motors.max_voltage() + ang / 4.0;
         let r = robot.left_motors.max_voltage() - ang / 4.0;
-        _ = robot.left_motors.set_voltage(l);
-        _ = robot.right_motors.set_voltage(r);
+        _ = robot.left_motors.set_voltage(l / 5.0);
+        _ = robot.right_motors.set_voltage(r / 5.0);
+
+        println!("{}", angle_to(robot.loc, location));
 
         // Exit conditions
         if ticks >= timeout                                     { break; }
         if distance(location, robot.loc) < tolerance { break; }
 
         ticks += Controller::UPDATE_INTERVAL.as_secs_f64();
+        robot.loc = track_location(robot);
         sleep(Controller::UPDATE_INTERVAL).await;
     }
+
+    _ = robot.left_motors.set_voltage(0.0);
+    _ = robot.right_motors.set_voltage(0.0);
 }
 
 pub async fn point_in_dir(robot: &mut util::Robot, direction: f64, tolerance: f64, timeout: f64) {
@@ -26,7 +32,7 @@ pub async fn point_in_dir(robot: &mut util::Robot, direction: f64, tolerance: f6
     loop {
         let ang = angle_diff(robot.loc.heading, direction);
         let l = ang / 4.0;
-        let r = ang / 4.0;
+        let r = -ang / 4.0;
         _ = robot.left_motors.set_voltage(l);
         _ = robot.right_motors.set_voltage(r);
 
@@ -35,8 +41,12 @@ pub async fn point_in_dir(robot: &mut util::Robot, direction: f64, tolerance: f6
         if (ang).abs() < tolerance { break; }
 
         ticks += Controller::UPDATE_INTERVAL.as_secs_f64();
+        robot.loc = track_location(robot);
         sleep(Controller::UPDATE_INTERVAL).await;
     }
+
+    _ = robot.left_motors.set_voltage(0.0);
+    _ = robot.right_motors.set_voltage(0.0);
 }
 
 pub fn track_location(robot: &mut util::Robot) -> util::Location {

@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use vexide::prelude::*;
 use vexide_motorgroup::MotorGroup;
 
@@ -50,7 +52,7 @@ pub fn distance(loc1: Location, loc2: Location) -> f64 {
 }
 
 pub fn angle_to(loc1: Location, loc2: Location) -> f64 {
-    (loc2.y - loc1.y).atan2(loc2.x - loc1.x)
+    (loc2.y - loc1.y).atan2(loc2.x - loc1.x) * 180.0 / PI
 }
 
 pub fn angle_diff(start: f64, target: f64) -> f64{

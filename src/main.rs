@@ -28,6 +28,8 @@ impl Compete for util::Robot {
         auton::move_to_loc(self, util::loc(0.0, 1.0, 0.0), 0.01, 5.0).await;
         sleep(Duration::from_millis(500)).await;
         auton::move_to_loc(self, util::loc(0.0, 0.0, 0.0), 0.01, 5.0).await;
+        sleep(Duration::from_millis(500)).await;
+        auton::point_in_dir(self, 45.0, 1.0, 5.0).await;
 
         claw(self, 12.0, true);
         set_lift(self, 50.0);

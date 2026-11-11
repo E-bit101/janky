@@ -53,6 +53,10 @@ pub fn angle_to(loc1: Location, loc2: Location) -> f64 {
     (loc2.y - loc1.y).atan2(loc2.x - loc1.x)
 }
 
+pub fn angle_diff(start: f64, target: f64) -> f64{
+    return (target - start + 180.0) % 360.0 - 180.0;
+}
+
 pub fn stringify_location(loc: Location) -> String {
     return format!("[{}m, {}m, {}°]", loc.x, loc.y, loc.heading);
 }

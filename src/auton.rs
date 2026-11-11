@@ -40,7 +40,7 @@ pub async fn point_in_dir(robot: &mut util::Robot, direction: f64, tolerance: f6
 }
 
 pub fn track_location(robot: &mut util::Robot) -> util::Location {
-    let wheel_travel = (PI * 0.0635).powi(2) / 360.0;
+    let wheel_travel = (PI * 0.0635) / 180.0;
     let l = robot.left_motors.position().unwrap_or(Angle::ZERO).as_degrees() * wheel_travel;
     let r = robot.right_motors.position().unwrap_or(Angle::ZERO).as_degrees() * wheel_travel;
 

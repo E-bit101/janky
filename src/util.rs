@@ -37,6 +37,22 @@ pub fn loc(x: f64, y: f64, heading: f64) -> Location {
     Location { x, y, heading }
 }
 
+pub fn shift_forward(loc: Location, dist: f64) -> Location {
+    return Location { 
+        x: loc.x + loc.heading.cos() * dist, 
+        y: loc.y + loc.heading.sin() * dist,
+        heading: loc.heading
+    }
+}
+
+pub fn distance(loc1: Location, loc2: Location) -> f64 {
+    return ((loc1.x-loc2.x).powi(2)+(loc1.y-loc2.y).powi(2)).powf(0.5);
+}
+
+pub fn angle_to(loc1: Location, loc2: Location) -> f64 {
+    (loc2.y - loc1.y).atan2(loc2.x - loc1.x)
+}
+
 pub fn stringify_location(loc: Location) -> String {
     return format!("[{}m, {}m, {}°]", loc.x, loc.y, loc.heading);
 }

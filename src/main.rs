@@ -4,7 +4,7 @@ use slint::ComponentHandle;
 use vexide::{math::Angle, prelude::*};
 use vexide_motorgroup::MotorGroup;
 
-use crate::util::remap_num;
+use crate::{auton::{claw, set_lift}, util::remap_num};
 
 mod util;
 mod auton;
@@ -20,26 +20,24 @@ impl Compete for util::Robot {
         println!("Autonomous!");
         self.ui.set_status_text("Status: Auton".into());
 
-        loop {
-            auton::track_location(self);
-            println!("{}", util::stringify_location(self.loc));
-            
-            auton::claw(self, 12.0, true);
-            auton::move_to_loc(self, util::loc(0.0, 0.0, 0.0));
-            auton::set_lift(self, 50.0);
-            loop { 
-                if auton::get_lift(self) <= 47.0 {break}; 
-                sleep(Controller::UPDATE_INTERVAL).await;
-            }
-            auton::claw(self, 0.0, true);
-            auton::move_to_loc(self, util::loc(0.0, 0.0, 0.0));
-            auton::claw(self, -12.0, true);
-            sleep(Duration::from_millis(1000)).await;
-            auton::claw(self, 0.0, false);
-            auton::move_to_loc(self, util::loc(0.0, 0.0, 0.0));
+        auton::track_location(self);
+        println!("{}", util::stringify_location(self.loc));
 
+        auton::move_to_loc(self, util::loc(1.0, 0.0, 0.0), 0.01, 5.0).await;
+        sleep(Duration::from_millis(500)).await;
+        auton::move_to_loc(self, util::loc(0.0, 1.0, 0.0), 0.01, 5.0).await;
+        sleep(Duration::from_millis(500)).await;
+        auton::move_to_loc(self, util::loc(0.0, 0.0, 0.0), 0.01, 5.0).await;
+
+        claw(self, 12.0, true);
+        set_lift(self, 50.0);
+
+        loop { 
+            if auton::get_lift(self) <= 47.0 {break}; 
             sleep(Controller::UPDATE_INTERVAL).await;
         }
+
+        println!("Auton Complete!");
     }
 
     async fn driver(&mut self) {

@@ -136,6 +136,9 @@ impl Compete for util::Robot {
 
             // LIFT
             _ = self.lift_motors.set_voltage(c_lift * self.lift_motors.max_voltage());
+            if self.lift_motors.position().unwrap_or(Angle::ZERO).as_degrees() < 0.0 {
+                _ = self.lift_motors.set_voltage(self.lift_motors.max_voltage());
+            }
 
             // INTAKE
             _ = self.intake_motor.set_voltage(-c_intake * self.lift_motors.max_voltage());

@@ -23,32 +23,36 @@ impl Compete for util::Robot {
         auton::track_location(self);
         println!("{}", util::stringify_location(self.loc));
 
-        auton::move_to_loc(self, 
-            util::loc(1.0, 1.0, 0.0), 
-            0.25, 
-            5.0
-        ).await;
+        auton::move_to_loc(self, util::loc(0.0, 0.687, 0.0), 0.2, 5.0).await;
+        set_lift(self, 200.0);
         sleep(Duration::from_millis(500)).await;
 
-        auton::move_to_loc(self, 
-            util::loc(0.0, 1.0, 0.0), 
-            0.25, 
-            5.0
-        ).await;
+        claw(self, -12.0, true);
+        auton::move_to_loc(self, util::loc(-0.455, 1.083, 0.0), 0.2, 5.0).await;
         sleep(Duration::from_millis(500)).await;
-
-        auton::move_to_loc(self, util::loc(0.0, 0.0, 0.0), 0.5, 5.0).await;
-        sleep(Duration::from_millis(500)).await;
-        auton::point_in_dir(self, 45.0, 1.0, 5.0).await; 
-
-        claw(self, 12.0, true);
-        set_lift(self, 50.0);
-
+        set_lift(self, 0.0);
         loop { 
-            if auton::get_lift(self) <= 47.0 {break}; 
+            if auton::get_lift(self) >= 5.0 {break}; 
+            sleep(Controller::UPDATE_INTERVAL).await;
+        }
+        set_lift(self, 200.0);
+        loop { 
+            if auton::get_lift(self) <= 190.0 {break}; 
+            sleep(Controller::UPDATE_INTERVAL).await;
+        }
+        claw(self, 0.0, true);
+
+        auton::move_to_loc(self, util::loc(-0.563, 0.803, 0.0), 0.2, 5.0).await;
+        sleep(Duration::from_millis(500)).await;
+
+        set_lift(self, 0.0);
+        loop { 
+            if auton::get_lift(self) >= 5.0 {break}; 
             sleep(Controller::UPDATE_INTERVAL).await;
         }
 
+        claw(self, 12.0, true);
+       
         println!("Auton Complete!");
     }
 

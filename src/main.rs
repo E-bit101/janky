@@ -23,12 +23,12 @@ impl Compete for util::Robot {
         auton::track_location(self);
         println!("{}", util::stringify_location(self.loc));
 
-        auton::move_to_loc(self, util::loc(0.0, 0.687, 0.0), 0.2, 5.0).await;
+        auton::move_to_loc(self, util::loc(0.481,0.0, 0.0), 0.2, 5.0).await;
         set_lift(self, 200.0);
         sleep(Duration::from_millis(500)).await;
 
         claw(self, -12.0, true);
-        auton::move_to_loc(self, util::loc(-0.455, 1.083, 0.0), 0.2, 5.0).await;
+        auton::move_to_loc(self, util::loc(0.878, -0.442, 0.0), 0.2, 5.0).await;
         sleep(Duration::from_millis(500)).await;
         set_lift(self, 0.0);
         loop { 
@@ -42,7 +42,7 @@ impl Compete for util::Robot {
         }
         claw(self, 0.0, true);
 
-        auton::move_to_loc(self, util::loc(-0.563, 0.803, 0.0), 0.2, 5.0).await;
+        auton::move_to_loc(self, util::loc(0.598, -0.559, 0.0), 0.2, 5.0).await;
         sleep(Duration::from_millis(500)).await;
 
         set_lift(self, 0.0);

@@ -39,9 +39,9 @@ pub fn default_config() -> RobotConfig {
     return RobotConfig { 
         number_configs: [
             ConfigNumber { option_name: "Driving Speed".to_string(), value: 1.0, min_value: 0.0, max_value: 1.0, increment: 0.1 }, 
-            ConfigNumber { option_name: "Turning Speed".to_string(), value: 0.8, min_value: 0.0, max_value: 2.0, increment: 0.1 }, 
+            ConfigNumber { option_name: "Turning Speed".to_string(), value: 0.95, min_value: 0.0, max_value: 2.0, increment: 0.1 }, 
             ConfigNumber { option_name: "Claw Low Angle".to_string(), value: 0.0, min_value: -270.0, max_value: 270.0, increment: 5.0 }, 
-            ConfigNumber { option_name: "Claw High Angle".to_string(), value: 215.0, min_value: -270.0, max_value: 270.0, increment: 5.0 },
+            ConfigNumber { option_name: "Claw High Angle".to_string(), value: 220.0, min_value: -270.0, max_value: 270.0, increment: 5.0 },
         ],
         current_row: 0
     };

@@ -14,7 +14,6 @@ mod config;
 // You will need to configure your `build.rs` to do this; see below.
 slint::include_modules!();
 
-
 impl Compete for util::Robot {
     async fn autonomous(&mut self) {
         println!("Autonomous!");
@@ -22,36 +21,57 @@ impl Compete for util::Robot {
 
         auton::track_location(self);
         println!("{}", util::stringify_location(self.loc));
-
-        auton::move_to_loc(self, util::loc(0.481,0.0, 0.0), 0.2, 5.0).await;
-        set_lift(self, 200.0);
-        sleep(Duration::from_millis(500)).await;
-
-        claw(self, -12.0, true);
-        auton::move_to_loc(self, util::loc(0.878, -0.442, 0.0), 0.2, 5.0).await;
-        sleep(Duration::from_millis(500)).await;
-        set_lift(self, 0.0);
-        loop { 
-            if auton::get_lift(self) >= 5.0 {break}; 
+        _ = self.intake_motor.set_voltage(self.lift_motors.max_voltage());
+        loop {
+            if self.intake_motor.position().unwrap_or(Angle::from_degrees(360.0*2.0)).as_turns() > 1.1 { break; }
             sleep(Controller::UPDATE_INTERVAL).await;
         }
+        _ = self.intake_motor.set_voltage(0.0);
+
+        auton::move_to_loc(self, util::loc(0.075,0.0, 0.0), 0.04, 3.0).await;
         set_lift(self, 200.0);
-        loop { 
-            if auton::get_lift(self) <= 190.0 {break}; 
-            sleep(Controller::UPDATE_INTERVAL).await;
-        }
         claw(self, 0.0, true);
-
-        auton::move_to_loc(self, util::loc(0.598, -0.559, 0.0), 0.2, 5.0).await;
         sleep(Duration::from_millis(500)).await;
 
-        set_lift(self, 0.0);
-        loop { 
-            if auton::get_lift(self) >= 5.0 {break}; 
-            sleep(Controller::UPDATE_INTERVAL).await;
-        }
-
+        auton::move_to_loc(self, util::loc(0.075, -0.35, 0.0), 0.04, 3.0).await;
+        sleep(Duration::from_millis(500)).await;
+        // set_lift(self, 0.0);
+        // let mut ticks = 0.0;
+        // loop {   
+        //     if auton::get_lift(self) <= 190.0 {break}; 
+        //     sleep(Controller::UPDATE_INTERVAL).await;
+        //     ticks += (Controller::UPDATE_INTERVAL.as_millis() * 1000) as f64;
+        //     if ticks > 4.0 { break; }
+        // }
         claw(self, 12.0, true);
+        sleep(Duration::from_millis(250)).await;
+        // set_lift(self, 200.0);
+        // ticks = 0.0;
+        // loop { 
+        //     if auton::get_lift(self) >= 5.0 {break}; 
+        //     sleep(Controller::UPDATE_INTERVAL).await;
+        //     ticks += (Controller::UPDATE_INTERVAL.as_millis() * 1000) as f64;
+        //     if ticks > 4.0 { break; }
+        // }
+
+        sleep(Duration::from_millis(750)).await;
+        _ = self.left_motors.set_voltage(self.left_motors.max_voltage() * -0.25);
+        _ = self.right_motors.set_voltage(self.left_motors.max_voltage() * -0.25);
+        sleep(Duration::from_millis(750)).await;
+        claw(self, 0.0, true);
+        _ = self.left_motors.set_voltage(0.0);
+        _ = self.right_motors.set_voltage(0.0);
+
+        // auton::move_to_loc(self, util::loc(0.598, -0.559, 0.0), 0.2, 5.0).await;
+        // sleep(Duration::from_millis(500)).await;
+
+        // set_lift(self, 0.0);
+        // loop { 
+        //     if auton::get_lift(self) >= 5.0 {break}; 
+        //     sleep(Controller::UPDATE_INTERVAL).await;
+        // }
+
+        // claw(self, 12.0, true);
        
         println!("Auton Complete!");
     }
@@ -62,6 +82,7 @@ impl Compete for util::Robot {
 
         let mut claw_rot_state: f64 = 0.0;
         let mut config_open: bool = false;
+        let mut lift_lock = false;
         loop {
             let state = self.controller.state().unwrap_or_default();
 
@@ -135,9 +156,18 @@ impl Compete for util::Robot {
             _ = self.right_motors.set_voltage(r * self.left_motors.max_voltage() * drive_speed);
 
             // LIFT
-            _ = self.lift_motors.set_voltage(c_lift * self.lift_motors.max_voltage());
+            if c_lift != 0.0 { lift_lock = false; }
+            if !lift_lock {
+                _ = self.lift_motors.set_voltage(c_lift * self.lift_motors.max_voltage());
+            }
             if self.lift_motors.position().unwrap_or(Angle::ZERO).as_degrees() < 0.0 {
                 _ = self.lift_motors.set_voltage(self.lift_motors.max_voltage());
+                lift_lock = false
+            }
+
+            if state.button_down.is_now_pressed() && !config_open {
+                _ = self.lift_motors.set_position_target(Angle::from_degrees(1.0), 200);
+                lift_lock = true;
             }
 
             // INTAKE
@@ -147,8 +177,15 @@ impl Compete for util::Robot {
             _ = self.claw_motor.set_voltage(-c_claw * self.lift_motors.max_voltage());
 
             // CLAW ROTATION
+            if state.button_a.is_now_pressed() {
+                _ = self.claw_tilt.brake(vexide::smart::motor::BrakeMode::Brake);
+            }
             if c_claw_rot != -1.0 { claw_rot_state = c_claw_rot }
             _ = self.claw_tilt.set_position_target(Angle::from_degrees(remap_num(claw_rot_state, -claw_low_angle, claw_high_angle)), 200);
+
+            if c_claw_rot == 0.0 && self.claw_tilt.position().unwrap_or(Angle::ZERO).as_degrees() <= -claw_low_angle + 5.0 {
+                _ = self.claw_tilt.brake(vexide::smart::motor::BrakeMode::Coast);
+            }
 
             sleep(Controller::UPDATE_INTERVAL).await; 
         }

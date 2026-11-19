@@ -129,7 +129,12 @@ impl Compete for util::Robot {
 
             let turn = util::steering(state.right_stick.x()) * util::turn_speed(state.right_stick.x()) * turn_speed;
 
-            _ = self.drivetrain.model.drive_arcade(state.left_stick.y() * drive_speed, turn);
+            let mut speed_nerf: f64 = self.lift_motors.position().unwrap_or(Angle::ZERO).as_turns() / 30.0;
+            if speed_nerf.abs() > 1.0 { speed_nerf = 1.0 }
+
+            _ = self.drivetrain.model.drive_arcade(
+                state.left_stick.y() * drive_speed * (1.0 - speed_nerf).abs(), 
+                turn);
             if state.button_y.is_pressed() {
                 println!("Heading: {}° Location: {}", self.drivetrain.tracking.heading().as_degrees(), self.drivetrain.tracking.position());
             }
@@ -179,7 +184,7 @@ async fn main(mut peripherals: Peripherals) {
         claw_motor: claw_motor,
         lift_motors: lift_motors,
         toggle_motor: toggle_motor,
-        config: config::default_config()
+        config: config::default_config(),
     }
     .compete()
     .await;

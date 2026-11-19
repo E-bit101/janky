@@ -4,7 +4,7 @@ use vexide::prelude::*;
 #[derive(Clone)]
 
 pub struct RobotConfig {
-    pub number_configs: [ConfigNumber; 2],
+    pub number_configs: [ConfigNumber; 3],
     pub current_row: isize
 }
 
@@ -39,7 +39,8 @@ pub fn default_config() -> RobotConfig {
     return RobotConfig { 
         number_configs: [
             ConfigNumber { option_name: "Driving Speed".to_string(), value: 1.0, min_value: 0.0, max_value: 1.0, increment: 0.1 }, 
-            ConfigNumber { option_name: "Turning Speed".to_string(), value: 0.95, min_value: 0.0, max_value: 2.0, increment: 0.1 }
+            ConfigNumber { option_name: "Turning Speed".to_string(), value: 0.95, min_value: 0.0, max_value: 2.0, increment: 0.1 },
+            ConfigNumber { option_name: "CG Nerf Divisor".to_string(), value: 30.0, min_value: 1.0, max_value: 100.0, increment: 1.0 }
         ],
         current_row: 0
     };

@@ -126,10 +126,11 @@ impl Compete for util::Robot {
             // DRIVING
             let drive_speed = self.config.number_configs[0].value;
             let turn_speed  = self.config.number_configs[1].value;
+            let cg_nerf     = self.config.number_configs[2].value;
 
             let turn = util::steering(state.right_stick.x()) * util::turn_speed(state.right_stick.x()) * turn_speed;
 
-            let mut speed_nerf: f64 = self.lift_motors.position().unwrap_or(Angle::ZERO).as_turns() / 30.0;
+            let mut speed_nerf: f64 = self.lift_motors.position().unwrap_or(Angle::ZERO).as_turns() / cg_nerf;
             if speed_nerf.abs() > 1.0 { speed_nerf = 1.0 }
 
             _ = self.drivetrain.model.drive_arcade(

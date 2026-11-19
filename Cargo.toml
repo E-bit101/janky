@@ -21,9 +21,13 @@ slint = { version = "1.14.1", default-features = false, features = ["compat-1-2"
 vex-sdk = "0.28.0"
 vexide-slint = { git = "https://github.com/vexide/vexide-slint", branch = "main" }
 vexide-motorgroup = "2.1.0"
-pid = "4.0.0"
+evian = { git = "https://github.com/vexide/evian", branch = "main" }
+futures-util = { version = "0.3", default-features = false, features = ["async-await", "async-await-macro"] }
 
 [build-dependencies]
 slint-build = "1.9.0"
+
+#[patch."https://github.com/vexide/evian"]
+#evian = { path = "../evian/packages/evian" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

@@ -43,7 +43,7 @@ pub async fn move_lift_to(lift_motors: &mut MotorGroup, height: f64) {
         _ = lift_motors.set_voltage(diff * 3.0);
 
         timeout += Controller::UPDATE_INTERVAL.as_millis() as f64 / 1000.0;
-        if timeout > 0.1 { break; }
+        if timeout > 5.0 { break; }
         if diff <= 0.1 { break; }
         sleep(Controller::UPDATE_INTERVAL).await;
     }
